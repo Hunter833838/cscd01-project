@@ -1,6 +1,5 @@
 
 Anthony Alaimo: 
-Anthony Alaimo:
 Utorid: alaimoa1
 Student Number: 1004421814
 Preferred Communication Method: Discord
