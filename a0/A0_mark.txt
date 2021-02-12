@@ -1,0 +1,73 @@
+Team Name:
+
+Total mark for A0 : 19___/25   
+
+
+
+Team.md (Max 1 mark)
+  - Repository is well structured and communication methods are indicated (max 1 marks) [0 marks: not structered properly, 1 mark : structered properly]
+    Your mark:__
+	
+	team.md mark: 1___
+	
+
+
+Team introduction (Max 2 marks)
+  - Team's goals and strengths are well defined (max 2 marks) [0 marks: not at all, 1 mark : hard to understand or missing components, 2 marks : well defined]
+
+    Your mark:__2
+  
+
+
+Team member introduction (Max 3 marks) 
+  - Each team member's biography is present and informative (max 3 marks) [0 marks : no biography, -0.5 for each missing member's biography, 3 marks : all member's biography is informative]
+
+   Your mark: __3
+   
+
+
+Team agreement (max 4 marks)
+   - Contingency planning [0 marks: not present, 1 mark: present] (__/1)
+   - Communication method [0 marks: not present, 1 mark: present] (__/1)
+   - Additional components that define a team agreement [0 marks: not present, 1 mark: one other component present, 2 marks: atleast 2 other components] (__/2)
+
+   Your mark: __ 4
+
+
+
+Software development methodology (max 4 marks)
+   - Planning tools defined [0 marks: not present, 1 mark: present] (__/1)
+   - Development methodology stated [0 marks: not present, 1 mark: present] (__/1)
+   - Development methodology elaborated in detail without doubtable remarks [0 marks: not present, 1 mark: somewhat defined, 2 marks: well defined] (__/2)
+	
+   Your mark: __0 not presented
+
+
+
+Jira sign in (Max 1 mark)
+  - All members signed into jira (max 1 marks) [0 marks: not at all, 1 mark : all members signed in]
+
+    Your mark:__1
+
+
+
+Presentation (max 5 marks)
+   - Table of contents or navigation is present [0 marks: not present, 1 mark: present] (_1_/1)
+   - First impression of documentation is professional [0 marks: hard to read or unprofessional, 1 mark: layout is professional] (_1_/1)
+   - Sequence of structure makes sense [0 marks: not present or items are all over the place, 1 mark: sequence of presentation is sensible] (_1_/1)
+   - Overall impression [0 marks: not well done/looks like no effort, 1 mark: somewhat decent/could use more effort, 2 marks: marker is impressed or pleased] (_1_/2)
+	
+   Your mark: __4 need more efforts
+
+
+
+Quality (max 5 marks)
+  - Writing language
+    [5 marks : No grammer or spelling mistakes. Sentences are professional.]
+    [4 marks : One or two grammer/spelling mistakes.]
+    [3 marks : Multiple grammer/spelling mistakes.]
+    [2 marks : Broken sentances everywhere.]
+    [1 marks : Only bullet points and/or vague sentances that don't have meaning.]
+    [0 marks : Lack of writing and definition of items.]
+
+   Your mark __4 Should Capitalized the sentences in Team Agreement
