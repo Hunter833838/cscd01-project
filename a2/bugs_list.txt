@@ -1,0 +1,282 @@
+CSCD01 A2 
+
+List of bugs:
+
+
+1)	Regression in GP standard deviation where y_train.std() == 0
+	https://github.com/scikit-learn/scikit-learn/issues/18318
+
+
+2)	Interactive Imputer cannot accept PLSRegression() as an estimator due to "shape mismatch"
+	https://github.com/scikit-learn/scikit-learn/issues/19352
+
+
+3)	`sklearn.utils.multiclass.type_of_target` with sparse csr matrix raises ValueError
+	https://github.com/scikit-learn/scikit-learn/issues/14860
+
+
+4)	Pipeline requires both fit and transform method to be available instead of only fit_transform
+	https://github.com/scikit-learn/scikit-learn/issues/16710
+
+
+5)	LabelPropagation raises TypeError: A sparse matrix was passed 
+	https://github.com/scikit-learn/scikit-learn/issues/17085
+
+
+6)	Segmentation fault with SVC with probability = True and degree 3
+	https://github.com/scikit-learn/scikit-learn/issues/15008
+
+
+DETAILS:
+-------------------------------------------------------------------------------------------------------------
+
+BUG #1:
+
+Regression in GP standard deviation where y_train.std() == 0
+https://github.com/scikit-learn/scikit-learn/issues/18318
+
+Example:
+
+(Working)
+>>> from sklearn.datasets import make_friedman2
+>>> from sklearn.gaussian_process import GaussianProcessRegressor
+>>> from sklearn.gaussian_process.kernels import DotProduct, WhiteKernel
+>>> X, y = make_friedman2(n_samples=500, noise=0, random_state=0)
+>>> kernel = DotProduct() + WhiteKernel()
+>>> gpr = GaussianProcessRegressor(kernel=kernel,normalize_y=True,
+...        random_state=0).fit(X, y)
+>>> gpr.score(X, y)
+0.8690...
+>>> gpr.predict(X[:2,:], return_std=True)
+(array([...]))
+
+(Not Working)
+>>> from sklearn.datasets import make_friedman2
+>>> from sklearn.gaussian_process import GaussianProcessRegressor
+>>> from sklearn.gaussian_process.kernels import DotProduct, WhiteKernel
+>>> X, y = make_friedman2(n_samples=1, noise=0, random_state=0)
+>>> kernel = DotProduct() + WhiteKernel()
+>>> gpr = GaussianProcessRegressor(kernel=kernel, normalize_y=True,
+       random_state=0).fit(X, y)
+... ValueError: array must not contain infs or NaNs
+
+Problem most likely occurs in sklearn.gaussian_process._gpr.py module, line 203, from a division by 0 error.
+
+-----------------------------------------------------------------------------------------------------------------
+
+BUG #2:
+
+Interactive Imputer cannot accept PLSRegression() as an estimator due to "shape mismatch"
+https://github.com/scikit-learn/scikit-learn/issues/19352
+
+>>> import numpy as np
+>>> from sklearn.datasets import fetch_california_housing
+>>> from sklearn.cross_decomposition import PLSRegression
+>>> from sklearn.experimental import enable_iterative_imputer
+>>> from sklearn.impute import IterativeImputer
+>>> rng = np.random.RandomState(42)
+>>> X_california, y_california = fetch_california_housing(return_X_y=True)
+>>> X_california = X_california[:400]
+>>> y_california = y_california[:400]
+>>> n_samples, n_features = X_california.shape
+>>> missing_rate = 0.75
+>>> n_missing_samples = int(n_samples * missing_rate)
+>>> missing_samples = np.zeros(n_samples, dtype=bool)
+>>> missing_samples[: n_missing_samples] = True
+>>> rng.shuffle(missing_samples)
+>>> missing_features = rng.randint(0, n_features, n_missing_samples)
+>>> X_missing = X_california.copy()
+>>> X_missing[missing_samples, missing_features] = np.nan
+>>> y_missing = y_california.copy()
+>>> imputer = IterativeImputer(estimator=PLSRegression(n_components=2))
+>>> X_imputed = imputer.fit_transform(X_california)
+>>> print(X_imputed)
+Expected output:
+[[   8.3252       41.            6.98412698 ...    2.55555556
+    37.88       -122.23      ]
+ [   8.3014       21.            6.23813708 ...    2.10984183
+    37.86       -122.22      ]
+ [   7.2574       52.            8.28813559 ...    2.80225989
+    37.85       -122.24      ]
+ ...
+ [   3.8672       50.            5.33480176 ...    2.30396476
+    37.88       -122.29      ]
+ [   5.1675       52.            6.39869281 ...    2.44444444
+    37.89       -122.29      ]
+ [   5.1696       52.            6.11590296 ...    2.70619946
+    37.89       -122.29      ]]
+Actual output;
+File "/home/hushsh/py3/lib/python3.6/site-packages/sklearn/impute/_iterative.py", line 348, in _impute_one_feature
+    X_filled[missing_row_mask, feat_idx] = imputed_values
+ValueError: shape mismatch: value array of shape (27,1) could not be broadcast to indexing result of shape (27,)
+
+BUG #3:
+
+`sklearn.utils.multiclass.type_of_target` with sparse csr matrix raises ValueError
+https://github.com/scikit-learn/scikit-learn/issues/14860
+
+Steps to reproduce:
+Call type_of_target() by passing in a CSR matrix that is not of type 'multilabel-indicator'
+
+Example:
+from sklearn.utils.multiclass import type_of_target
+from scipy.sparse import csr_matrix
+import numpy as np
+
+class_probas = np.array([
+    [0, 0, 0],
+    [0.5, 0, 0.6],
+    [0, 0, 0.8]])
+
+print(type_of_target(csr_matrix(class_probas)))
+
+# Expected: 'continuous-multioutput'
+# Actual: File "TestBug.py", line 13, in <module>
+    print(type_of_target(csr_matrix(class_probas)))
+  File "...\sklearn\utils\multiclass.py", line 288, in type_of_target
+    if y.ndim > 2 or (y.dtype == object and len(y) and
+TypeError: len() of unsized object
+
+-----------------------------------------------------------------------------------------------------------------------
+
+BUG #4:
+Pipeline requires both fit and transform method to be available instead of only fit_transform
+https://github.com/scikit-learn/scikit-learn/issues/16710
+
+Steps to reproduce:
+
+>>> from sklearn.decomposition import PCA
+>>> from sklearn.manifold import TSNE
+>>> from sklearn.pipeline import make_pipeline
+>>> make_pipeline(TSNE(), PCA())
+
+
+Expected:
+Pipeline is created
+
+Bug: (actual)
+Traceback (most recent call last):
+  File "C:/Users/Evan8456/Documents/CSCD01/bug.py", line 4, in <module>
+    make_pipeline(TSNE(), PCA())
+  File "C:\Users\Evan8456\AppData\Local\Programs\Python\Python36-32\Lib\site-packages\sklearn\pipeline.py", line 594, in make_pipeline
+    return Pipeline(_name_estimators(steps), memory=memory)
+  File "C:\Users\Evan8456\AppData\Local\Programs\Python\Python36-32\Lib\site-packages\sklearn\pipeline.py", line 119, in __init__
+    self._validate_steps()
+  File "C:\Users\Evan8456\AppData\Local\Programs\Python\Python36-32\Lib\site-packages\sklearn\pipeline.py", line 167, in _validate_steps
+    " '%s' (type %s) doesn't" % (t, type(t)))
+builtins.TypeError: All intermediate steps should be transformers and implement fit and transform. 'TSNE(angle=0.5, early_exaggeration=12.0, init='random', learning_rate=200.0,
+   method='barnes_hut', metric='euclidean', min_grad_norm=1e-07,
+   n_components=2, n_iter=1000, n_iter_without_progress=300,
+   perplexity=30.0, random_state=None, verbose=0)' (type <class 'sklearn.manifold.t_sne.TSNE'>) doesn't
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+BUG #5:
+
+LabelPropagation raises TypeError: A sparse matrix was passed 
+https://github.com/scikit-learn/scikit-learn/issues/17085
+
+Steps to reproduce:
+
+import sklearn
+from scipy.sparse import csr_matrix
+from sklearn.datasets import make_classification
+from sklearn.semi_supervised import LabelPropagation
+
+X, y = make_classification()
+classifier = LabelPropagation(kernel='knn')
+classifier.fit(csr_matrix(X), y)
+y_pred = classifier.predict(csr_matrix(X))
+This error occurs:
+Traceback (most recent call last):
+  File "bug.py", line 8, in <module>
+    classifier.fit(csr_matrix(X), y)
+  File "/Users/hunteruberti/D01/scikit-learn/sklearn/semi_supervised/_label_propagation.py", line 409, in fit
+    return super().fit(X, y)
+  File "/Users/hunteruberti/D01/scikit-learn/sklearn/semi_supervised/_label_propagation.py", line 229, in fit
+    X, y = self._validate_data(X, y)
+  File "/Users/hunteruberti/D01/scikit-learn/sklearn/base.py", line 433, in _validate_data
+    X, y = check_X_y(X, y, **check_params)
+  File "/Users/hunteruberti/D01/scikit-learn/sklearn/utils/validation.py", line 63, in inner_f
+    return f(*args, **kwargs)
+  File "/Users/hunteruberti/D01/scikit-learn/sklearn/utils/validation.py", line 814, in check_X_y
+    X = check_array(X, accept_sparse=accept_sparse,
+  File "/Users/hunteruberti/D01/scikit-learn/sklearn/utils/validation.py", line 63, in inner_f
+    return f(*args, **kwargs)
+  File "/Users/hunteruberti/D01/scikit-learn/sklearn/utils/validation.py", line 593, in check_array
+    array = _ensure_sparse_format(array, accept_sparse=accept_sparse,
+  File "/Users/hunteruberti/D01/scikit-learn/sklearn/utils/validation.py", line 360, in _ensure_sparse_format
+    raise TypeError('A sparse matrix was passed, but dense '
+TypeError: A sparse matrix was passed, but dense data is required. Use X.toarray() to convert to a dense numpy array.
+(base) 
+ 
+
+
+The code should run without error, with similar behaviour to code that uses a dense matrix:
+  
+X, y = make_classification()
+classifier = LabelPropagation(kernel='knn')
+classifier.fit(X, y)
+y_pred = classifier.predict(X)
+
+------------------------------------------------------------------------------------------------------------------------
+
+BUG #6: 
+
+Segmentation fault with SVC with probability = True and degree 3
+https://github.com/scikit-learn/scikit-learn/issues/15008
+
+Code crashes in the file ./svm/src/libsvm/svm.cpp
+
+Backtrace shows line 1932 of the file is where it crashes.
+
+1932:       A=0.0; B=log((prior0+1.0)/(prior1+1.0));
+
+A and B from above are passed in a function on line 2502
+ 
+2472:                int p = 0;
+
+2502:       .....probA[p],probB[p]...... 
+
+p is incremented in a nested for loop and reaches values that cause integer overflow and mess up the values of A and B. This can likely be fixed by defining p as a uint64_t to prevent an overflow
+
+Repro with code provided in https://github.com/scikit-learn/scikit-learn/issues/15008:
+
+Ryans-MBP:tmp ryanwoodard$ python3 a.py 
+Python(18305,0x107701e00) malloc: can't allocate region
+:*** mach_vm_map(size=18446744068921303040, flags: 100) failed (error code=3)
+Python(18305,0x107701e00) malloc: *** set a breakpoint in malloc_error_break to debug
+Python(18305,0x107701e00) malloc: can't allocate region
+:*** mach_vm_map(size=18446744071315427328, flags: 100) failed (error code=3)
+Python(18305,0x107701e00) malloc: *** set a breakpoint in malloc_error_break to debug
+Python(18305,0x107701e00) malloc: can't allocate region
+:*** mach_vm_map(size=18446744071315427328, flags: 100) failed (error code=3)
+Python(18305,0x107701e00) malloc: *** set a breakpoint in malloc_error_break to debug
+..
+optimization finished, #iter = 16
+obj = -0.000000, rho = -0.293680
+nSV = 7, nBSV = 0
+Total nSV = 7
+.*
+optimization finished, #iter = 9
+obj = -0.000000, rho = -0.148139
+nSV = 6, nBSV = 0
+Total nSV = 6
+..
+optimization finished, #iter = 17
+obj = -0.000000, rho = -0.296398
+nSV = 7, nBSV = 0
+Total nSV = 7
+...
+optimization finished, #iter = 20
+obj = -0.000000, rho = 0.252927
+nSV = 6, nBSV = 0
+Total nSV = 6
+.*
+optimization finished, #iter = 11
+obj = -0.000000, rho = -0.044732
+nSV = 6, nBSV = 0
+Total nSV = 6
+Segmentation fault: 11
+
