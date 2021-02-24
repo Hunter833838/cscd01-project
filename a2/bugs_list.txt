@@ -110,6 +110,8 @@ File "/home/hushsh/py3/lib/python3.6/site-packages/sklearn/impute/_iterative.py"
     X_filled[missing_row_mask, feat_idx] = imputed_values
 ValueError: shape mismatch: value array of shape (27,1) could not be broadcast to indexing result of shape (27,)
 
+-----------------------------------------------------------------------------------------------------------------
+
 BUG #3:
 
 `sklearn.utils.multiclass.type_of_target` with sparse csr matrix raises ValueError
