@@ -11,7 +11,7 @@ Overall Architecture (Max 30 marks)
     [1-2 marks : Some explanations and elaborations]
     [0 marks : Explanations and elaborations are missing]
 	
-	Understanding mark: _10_
+	Understanding mark: _9_
 
 
 
@@ -22,7 +22,7 @@ Overall Architecture (Max 30 marks)
     [1-2 marks : Explanations and elaborations are hard to understand, missing major components]
     [0 marks : Explanations and elaborations are missing or completely impossible to understand for newcomers]
 	
-	Explanation mark: __4_
+	Explanation mark: __5_
 
 
 
