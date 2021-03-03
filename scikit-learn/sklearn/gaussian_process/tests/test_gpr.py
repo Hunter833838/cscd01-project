@@ -9,7 +9,7 @@ import numpy as np
 import warnings
 
 from scipy.optimize import approx_fprime
-
+from sklearn.utils import check_array, check_random_state
 import pytest
 
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -543,3 +543,49 @@ def test_bound_check_fixed_hyperparameter():
                         periodicity_bounds="fixed")  # seasonal component
     kernel = k1 + k2
     GaussianProcessRegressor(kernel=kernel).fit(X, y)
+
+@pytest.mark.parametrize('kernel', kernels)
+def test_std_zero(kernel):
+    """When standard deviation is 0 code should
+    halt and send appropraite error message to user.
+    """
+    # Test for issue #18318
+    # unsuccessful case, sample size 1
+    X = np.array([[9.35735127e+01, 
+                   1.22635179e+03]])
+    y = np.array([1162.18300533])  
+    gpr = GaussianProcessRegressor(kernel=kernel, normalize_y=True)
+    assert_raise_message(ValueError, 
+                         'array must not contain infs or NaNs',
+                         gpr.fit, X, y)   
+    # unsuccessful case, sample size > 1 and all data is the same
+    X = np.array([[9.35735127e+01, 
+                   1.22635179e+03], 
+                  [9.35735127e+01, 
+                   1.22635179e+03]])
+    y = np.array([1162.18300533, 1162.18300533])  
+    gpr = GaussianProcessRegressor(kernel=kernel, normalize_y=True)
+    assert_raise_message(ValueError, 
+                         'array must not contain infs or NaNs',
+                         gpr.fit, X, y)       
+
+@pytest.mark.parametrize('kernel', kernels)
+def test_std_greater_than_zero(kernel):
+    """When standard deviation is 0 code should
+    halt and send appropraite error message to user.
+    """
+    # Test for issue #18318
+    # successful case, what a correct output looks like for gpr score
+    X = np.array([[5.48813504e+01, 1.29401721e+03, 6.02763376e-01, 6.44883183e+00],
+                  [4.23654799e+01, 1.18081453e+03, 4.37587211e-01, 9.91773001e+00],
+                  [9.63662761e+01, 7.52064577e+02, 7.91725038e-01, 6.28894920e+00],
+                  [5.68044561e+01, 1.63774446e+03, 7.10360582e-02, 1.87129300e+00],
+                  [2.02183974e+00, 1.48585495e+03, 7.78156751e-01, 9.70012148e+00]])
+    y = np.array([ 781.91445769,
+                   518.44313575,
+                   603.17587319,
+                   129.46587362,
+                   1156.22975782])  
+    gpr = GaussianProcessRegressor(kernel=kernel, normalize_y=True)
+    assert gpr.score(X, y) == -3.610727563661163
+ 
