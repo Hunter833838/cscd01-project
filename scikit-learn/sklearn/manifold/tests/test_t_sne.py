@@ -129,6 +129,7 @@ def test_TSNE_pipeline():
     X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                      random_state=0)
     # Run fit_transform
+    # Since it is a degnerate pipeline only fit_transform can be run
     pipeline.fit_transform(X_train,y_train)
 
 def test_binary_search_neighbors():
