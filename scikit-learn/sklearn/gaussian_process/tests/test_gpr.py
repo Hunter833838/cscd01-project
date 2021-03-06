@@ -273,6 +273,34 @@ def test_y_normalization(kernel):
 
     assert_almost_equal(y_cov, y_cov_norm)
 
+@pytest.mark.parametrize('kernel', kernels)
+def test_no_standard_deviation(kernel):
+    """
+    Here we test that when normalize_y=True, and when the standard
+    deviation(s) of the dataset is zero, that we do not continue
+    with the normalization, and that the user should be notified.
+    """
+    # here, we test when our dataset consists of only 1 sample. Data
+    # is taken from testing/make_friedman2 regression problem.
+    X = np.array([[5.48813504e+01, 1.29401721e+03, 6.02763376e-01, 6.44883183e+00]])
+    y = np.array([781.91445769])
+    gpr = GaussianProcessRegressor(kernel=kernel, normalize_y=True)
+    assert_raise_message(ValueError,
+                        "error normalizing data; standard deviation "
+                        "along one or more columns is equal to 0.",
+                        gpr.fit, X, y)
+    
+    # here, we test that when our dataset has more than 1 sample, but
+    # the samples have standard deviation of zero.
+    X = np.array([[5.48813504e+01, 1.29401721e+03, 6.02763376e-01, 6.44883183e+00],
+        [5.48813504e+01, 1.29401721e+03, 6.02763376e-01, 6.44883183e+00],
+        [5.48813504e+01, 1.29401721e+03, 6.02763376e-01, 6.44883183e+00]])
+    y = np.array([781.91445769,781.91445769,781.91445769])
+    gpr = GaussianProcessRegressor(kernel=kernel, normalize_y=True)
+    assert_raise_message(ValueError,
+                        "error normalizing data; standard deviation "
+                        "along one or more columns is equal to 0.",
+                        gpr.fit, X, y)
 
 def test_large_variance_y():
     """

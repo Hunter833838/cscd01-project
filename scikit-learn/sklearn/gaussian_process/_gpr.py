@@ -200,6 +200,10 @@ class GaussianProcessRegressor(MultiOutputMixin,
             self._y_train_std = np.std(y, axis=0)
 
             # Remove mean and make unit variance
+            if np.any(self._y_train_std == 0):
+                raise ValueError("error normalizing data; standard deviation "
+                                 "along one or more columns is equal to 0."
+                                )
             y = (y - self._y_train_mean) / self._y_train_std
 
         else:
