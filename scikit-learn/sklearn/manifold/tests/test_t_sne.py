@@ -23,6 +23,8 @@ from sklearn.manifold._t_sne import trustworthiness
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 from sklearn.pipeline import make_pipeline
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
 # mypy error: Module 'sklearn.manifold' has no attribute '_barnes_hut_tsne'
 from sklearn.manifold import _barnes_hut_tsne  # type: ignore
 from sklearn.manifold._utils import _binary_search_perplexity
@@ -118,8 +120,16 @@ def test_binary_search():
     assert_almost_equal(mean_perplexity, desired_perplexity, decimal=3)
 
 def test_TSNE_pipeline():
+    # Test creation of pipeline with non-parametric function (TSNE)
     pipeline = make_pipeline(TSNE(), PCA())
     assert pipeline != None
+
+    # Create test data
+    X, y = make_classification(random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(X, y,
+                                                     random_state=0)
+    # Run fit_transform
+    pipeline.fit_transform(X_train,y_train)
 
 def test_binary_search_neighbors():
     # Binary perplexity search approximation.
