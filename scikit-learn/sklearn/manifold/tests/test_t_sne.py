@@ -21,6 +21,8 @@ from sklearn.manifold._t_sne import _kl_divergence_bh
 from sklearn.manifold._t_sne import _gradient_descent
 from sklearn.manifold._t_sne import trustworthiness
 from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
+from sklearn.pipeline import make_pipeline
 # mypy error: Module 'sklearn.manifold' has no attribute '_barnes_hut_tsne'
 from sklearn.manifold import _barnes_hut_tsne  # type: ignore
 from sklearn.manifold._utils import _binary_search_perplexity
@@ -115,6 +117,9 @@ def test_binary_search():
                                for i in range(P.shape[0])])
     assert_almost_equal(mean_perplexity, desired_perplexity, decimal=3)
 
+def test_TSNE_pipeline():
+    pipeline = make_pipeline(TSNE(), PCA())
+    assert pipeline != None
 
 def test_binary_search_neighbors():
     # Binary perplexity search approximation.

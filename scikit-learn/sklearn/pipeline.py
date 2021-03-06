@@ -163,8 +163,7 @@ class Pipeline(_BaseComposition):
         for t in transformers:
             if t is None or t == 'passthrough':
                 continue
-            if (not (hasattr(t, "fit") or hasattr(t, "fit_transform")) or not
-                    hasattr(t, "transform")):
+            if not (hasattr(t,"fit_transform") or (hasattr(t,"transform") and hasattr(t,"fit"))):
                 raise TypeError("All intermediate steps should be "
                                 "transformers and implement fit and transform "
                                 "or be the string 'passthrough' "
