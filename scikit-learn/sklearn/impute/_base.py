@@ -573,7 +573,8 @@ class SimpleImputer(_BaseImputer):
         -------
         self._invalid_columns : ndarray of shape (n_samples, n_features)
             The original values of X that were not imputed during the last
-            transformation
+            transformation. If no transformations have been made yet, then
+            returns an empty array.
         """
         try:
             return self._invalid_columns
@@ -592,7 +593,8 @@ class SimpleImputer(_BaseImputer):
         -------
         self._invalid_statistics_indexes : ndarray of shape (, n_features)
             The indicies of the columns of X that were not imputed during the
-            last transformation
+            last transformation. If no transformations have been made yet, then
+            returns an empty array.
         """
         try:
             return self._invalid_statistics_indexes
