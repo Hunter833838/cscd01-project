@@ -49,7 +49,7 @@ def _check_statistics(X, X_true,
         assert_ae = assert_array_almost_equal
 
     # Normal matrix
-    imputer = SimpleImputer(missing_values=missing_values, strategy=strategy)
+    imputer = SimpleImputer(missing_values=missing_values, strategy=strategy, drop_columns=True)
     X_trans = imputer.fit(X).transform(X.copy())
     assert_ae(imputer.statistics_, statistics,
               err_msg=err_msg.format(False))
@@ -1500,3 +1500,61 @@ def test_most_frequent(expected, array, dtype, extra_value, n_repeat):
     assert expected == _most_frequent(
         np.array(array, dtype=dtype), extra_value, n_repeat
     )
+
+def test_base_simple_imputer_keep_invalid_columns():
+    imputer = SimpleImputer(drop_columns=False)
+    imputer.fit([[0, np.nan], [1, np.nan]])
+    transform = imputer.transform([[0, np.nan], [1, 1]])
+    assert_array_equal(transform, np.array([[0, np.nan], [1, 1]]))
+
+def test_base_simple_imputer_no_invalid_column():
+    imputer = SimpleImputer(drop_columns=True)
+    imputer.fit([[0, 1], [1, 1]])
+    transform = imputer.transform([[0, 1], [1, np.nan]])
+    assert_array_equal(transform, np.array([[0, 1], [1, 1]]))
+
+def test_base_simple_imputer_delete_single_invalid_column():
+    imputer = SimpleImputer(drop_columns=True)
+    imputer.fit([[0, np.nan], [1, np.nan]])
+    transform = imputer.transform([[0, np.nan], [1, 1]])
+    assert_array_equal(transform, np.array([[0], [1]]))
+
+def test_base_simple_imputer_delete_mulitple_invalid_columns():
+    imputer = SimpleImputer(drop_columns=True)
+    imputer.fit([[np.nan, 0, np.nan], [np.nan, 1, np.nan], [np.nan, 2, np.nan]])
+    transform = imputer.transform([[0, 1, 0], [1, 2, np.nan], [1, 1, 0]])
+    assert_array_equal(transform, np.array([[1], [2], [1]]))
+    
+def test_base_simple_imputer_store_deleted_columns():
+    imputer = SimpleImputer(drop_columns=True)
+    imputer.fit([[np.nan, np.nan, 1], [np.nan, np.nan, 1], [np.nan, np.nan, 2]])
+    imputer.transform([[0, 1, 0], [2, 3, np.nan], [4, 5, 0]])
+    assert_array_equal(imputer._invalid_columns, np.array([[0, 1], [2, 3], [4, 5]]))
+
+def test_base_simple_imputer_store_deleted_columns_indicies():
+    imputer = SimpleImputer(drop_columns=True)
+    imputer.fit([[np.nan, 0, np.nan], [np.nan, 1, np.nan], [np.nan, 2, np.nan]])
+    imputer.transform([[0, 1, 2], [1, 1, np.nan], [1, 0, 0]])
+    assert_array_equal(imputer._invalid_statistics_indexes, np.array([0, 2]))
+
+def test_base_simple_imputer_get_deleted_columns():
+    imputer = SimpleImputer(drop_columns=True)
+    imputer.fit([[np.nan, np.nan, 1], [np.nan, np.nan, 1], [np.nan, np.nan, 2]])
+    imputer._invalid_columns = np.array([[0, 1], [2, 3], [4, 5]])
+    assert_array_equal(imputer.get_invalid_columns(), np.array([[0, 1], [2, 3], [4, 5]]))
+
+def test_base_simple_imputer_get_deleted_columns_indicies():
+    imputer = SimpleImputer(drop_columns=True)
+    imputer.fit([[np.nan, 0, np.nan], [np.nan, 1, np.nan], [np.nan, 2, np.nan]])
+    imputer._invalid_statistics_indexes = np.array([0, 2])
+    assert_array_equal(imputer.get_invalid_columns_indicies(), np.array([0, 2]))
+
+def test_base_simple_imputer_get_no_deleted_columns():
+    imputer = SimpleImputer(drop_columns=True)
+    imputer.fit([[0, np.nan], [1, np.nan]])
+    assert_array_equal(imputer.get_invalid_columns(), np.array([]))
+
+def test_base_simple_imputer_get_no_deleted_columns_indicies():
+    imputer = SimpleImputer(drop_columns=True)
+    imputer.fit([[0, np.nan], [1, np.nan]])
+    assert_array_equal(imputer.get_invalid_columns_indicies(), np.array([]))
