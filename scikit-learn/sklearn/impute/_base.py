@@ -176,6 +176,10 @@ class SimpleImputer(_BaseImputer):
         the missing indicator even if there are missing values at
         transform/test time.
 
+    drop_columns : boolean, default=False
+        If True, then columns which only contained missing values at :meth: `fit` are
+        discarded upon :meth: `transform`, if strategy is not "constant"
+
     Attributes
     ----------
     statistics_ : array of shape (n_features,)
@@ -207,13 +211,11 @@ class SimpleImputer(_BaseImputer):
 
     Notes
     -----
-    Columns which only contained missing values at :meth:`fit` are discarded
-    upon :meth:`transform` if strategy is not "constant".
 
     """
     @_deprecate_positional_args
     def __init__(self, *, missing_values=np.nan, strategy="mean",
-                 fill_value=None, verbose=0, copy=True, add_indicator=False):
+                 fill_value=None, verbose=0, copy=True, add_indicator=False, drop_columns=True):
         super().__init__(
             missing_values=missing_values,
             add_indicator=add_indicator
@@ -222,6 +224,7 @@ class SimpleImputer(_BaseImputer):
         self.fill_value = fill_value
         self.verbose = verbose
         self.copy = copy
+        self.drop_columns = drop_columns
 
     def _validate_input(self, X, in_fit):
         allowed_strategies = ["mean", "median", "most_frequent", "constant"]
@@ -439,7 +442,9 @@ class SimpleImputer(_BaseImputer):
         # compute mask before eliminating invalid features
         missing_mask = _get_mask(X, self.missing_values)
 
-        # Delete the invalid columns if strategy is not constant
+        # Delete the invalid columns if:
+        # 1) strategy is not constant, and
+        # 2) drop_columns is True
         if self.strategy == "constant":
             valid_statistics = statistics
             valid_statistics_indexes = None
@@ -452,10 +457,14 @@ class SimpleImputer(_BaseImputer):
 
             if invalid_mask.any():
                 missing = np.arange(X.shape[1])[invalid_mask]
-                if self.verbose:
-                    warnings.warn("Deleting features without "
-                                  "observed values: %s" % missing)
-                X = X[:, valid_statistics_indexes]
+                self._invalid_statistics_indexes = np.flatnonzero(invalid_mask)
+                self._invalid_columns = X[:, self._invalid_statistics_indexes]
+
+                if self.drop_columns:
+                    if self.verbose:
+                        warnings.warn("Deleting features without "
+                                    "observed values: %s" % missing)
+                    X = X[:, valid_statistics_indexes]
 
         # Do actual imputation
         if sp.issparse(X):
@@ -552,6 +561,45 @@ class SimpleImputer(_BaseImputer):
         X_original[full_mask] = self.missing_values
         return X_original
 
+    def get_invalid_columns(self):
+        """Returns columns that were not imputed during the last imputation from
+        calling :meth: `transform`.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        self._invalid_columns : ndarray of shape (n_samples, n_features)
+            The original values of X that were not imputed during the last
+            transformation. If no transformations have been made yet, then
+            returns an empty array.
+        """
+        try:
+            return self._invalid_columns
+        except:
+            return []
+
+    def get_invalid_columns_indicies(self):
+        """Returns the indicies of columns that were not imputed during the last
+        imputation from calling :meth: `transform`.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        self._invalid_statistics_indexes : ndarray of shape (, n_features)
+            The indicies of the columns of X that were not imputed during the
+            last transformation. If no transformations have been made yet, then
+            returns an empty array.
+        """
+        try:
+            return self._invalid_statistics_indexes
+        except:
+            return []
 
 class MissingIndicator(TransformerMixin, BaseEstimator):
     """Binary indicators for missing values.
